@@ -18,6 +18,9 @@ repositories {
 }
 
 android {
+    // explicitly load local secrets here
+    loadProperties("localSecrets.properties")
+
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
 
@@ -70,10 +73,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('/Users/bobytanev/Projects/J2D-Demo/app/keystore.jks')
-            storePassword 'j2dd3m02++'
+            storeFile file("keystore.jks")
+            storePassword getSecret("releaseStorePass", "n/a")
             keyAlias "j2d"
-            keyPassword 'j2dd3m0'
+            keyPassword getSecret("releaseKeyPass", "n/a")
         }
     }
     buildTypes {
@@ -103,14 +106,23 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.0.0'
     testCompile 'junit:junit:4.12'
+
+    compile 'com.android.support:appcompat-v7:25.0.0'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true;
     }
+
+    compile 'com.jakewharton.timber:timber:4.3.1'
+    // debug lib
+    debugCompile 'com.facebook.stetho:stetho:1.4.1'
+    debugCompile 'com.facebook.stetho:stetho-timber:1.4.1'
+    debugCompile 'com.facebook.stetho:stetho-urlconnection:1.4.1'
+    // debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
 }
 
 afterEvaluate {

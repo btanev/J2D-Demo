@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools">
+
+    <item android:title="Simulate crash"
+          android:id="@+id/menu_simulate_crash"
+          app:showAsAction="never"
+          android:visible="true"
+          android:enabled="true"/>
+
+    <item android:title="Simulate non fatal"
+          android:id="@+id/menu_simulate_non_fatal"
+          app:showAsAction="never"
+          android:visible="true"
+          android:enabled="true"/>
+</menu>
