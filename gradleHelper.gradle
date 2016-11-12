@@ -12,7 +12,7 @@ def loadProperties(def fileName) {
     Properties properties = new Properties()
     properties.load(propertiesFile.newReader("UTF-8"))
     properties.each { property ->
-        // all extra properties must set in: project.ext
+        // all extra properties must be set in: project.ext
         project.ext.set(property.key, property.value)
     }
 }
@@ -45,18 +45,35 @@ def buildFabricPropertiesIfNeeded() {
 
 /**
  *
- * @return return CircleCI build branch or "localdev"
+ * @return CircleCI build branch or "localdev"
  */
 def getBranchName() {
-    def branch = System.getenv("CIRCLE_BRANCH");
-    if (branch != null && branch.length() > 0) {
-        branch = branch.trim();
+    def branch = System.getenv("CIRCLE_BRANCH")
+    if (branch?.length() > 0) {
+        branch = branch.trim()
     } else {
         // fallback for local dev
-        branch = "localdev";
+        branch = "localdev"
     }
 
-    return branch;
+    return branch
+}
+
+/**
+ *
+ * @return the branch name containing only lowercase alphabetic symbols
+ */
+def getSafeBranchIdentifier() {
+    def branch = getBranchName()
+    // remove all non alphabetic symbols
+    branch = branch.replaceAll("[^a-zA-Z]", "").toLowerCase()
+
+    if ("master".equalsIgnoreCase(branch)) {
+        // do not generate suffix for "master" branch
+        return ""
+    }
+
+    return branch
 }
 
 /**
@@ -75,11 +92,42 @@ def getChangelog() {
     if (logs.length() > 0) {
         def lines = logs.split("\n")
         for (int i = 0; i < lines.length; i++) {
-            items.add(String.format("%02d %s", i + 1, lines[i]))
+            items.add(String.format("%02d) %s", i + 1, lines[i]))
         }
     }
 
     return items.join("\n")
+}
+
+/**
+ *
+ * @return CI build number or a generated one
+ */
+def getBuildNumber() {
+    def circleBranch = System.getenv("CIRCLE_BUILD_NUM")
+    if (circleBranch?.length() > 0) {
+        // CircleCI build number
+        return circleBranch as int
+    }
+
+    // fallback mechanism for non CI env
+    return (versionMajor.toInteger() * 10000) + (versionMinor.toInteger() * 100) + (versionPatch.toInteger())
+}
+
+/**
+ *
+ * @return version string identifier (major.minor.buildNumber[-branch])
+ */
+def getVersionAsString() {
+    def buildNumber = getBuildNumber()
+    def branchSuffix = getSafeBranchIdentifier()
+    if (branchSuffix?.length() > 0) {
+        branchSuffix = "-$branchSuffix"
+    } else {
+        branchSuffix = ""
+    }
+
+    return "$versionMajor.$versionMinor.$buildNumber$branchSuffix"
 }
 
 // Export methods by turning them into closures
@@ -88,4 +136,7 @@ ext {
     getSecret = this.&getSecret
     loadProperties = this.&loadProperties
     getChangelog = this.&getChangelog
+    getBuildNumber = this.&getBuildNumber
+    getVersionAsString = this.&getVersionAsString
+    getSafeBranchIdentifier = this.&getSafeBranchIdentifier
 }

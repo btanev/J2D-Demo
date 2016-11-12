@@ -11,10 +11,12 @@ import io.fabric.sdk.android.Fabric;
  */
 
 public class J2DDemoApplication extends Application {
-
     @Override
     public void onCreate() {
         super.onCreate();
-        Fabric.with(this, new Crashlytics());
+
+        if (BuildConfig.USE_CRASHLYTICS) {
+            Fabric.with(this, new Crashlytics());
+        }
     }
 }

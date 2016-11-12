@@ -20,20 +20,60 @@ repositories {
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
+
+    def applicationIdentifier = "com.java2days.j2ddemo"
+    def applicationName = "J2D Demo"
+
     defaultConfig {
-        applicationId "com.java2days.j2ddemo"
+        applicationId applicationIdentifier
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode getBuildNumber()
+        versionName getVersionAsString()
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // enable crashlytics
+        buildConfigField("boolean", "USE_CRASHLYTICS", "true");
+        ext.enableCrashlytics = true
+        ext.betaDistributionReleaseNotes=getChangelog()
+
+        // app name
+        resValue "string", "app_name", applicationName
+    }
+    productFlavors {
+        def branchSuffix = getSafeBranchIdentifier()
+        // flavor specific identifier
+        def flavorApplicationId = "${applicationIdentifier}${branchSuffix?.length() > 0 ? "." : "" }${branchSuffix}"
+        // flavor specific app name
+        def flavorApplicationName = "${applicationName}${branchSuffix?.length() > 0 ? "-" : "" }${branchSuffix}"
+
+        localdev {
+            applicationId "${flavorApplicationId}.local"
+
+            // disable Crashlytics for local builds
+            buildConfigField("boolean", "USE_CRASHLYTICS", "false");
+            ext.enableCrashlytics = false
+
+            // app name
+            resValue "string", "app_name", flavorApplicationName
+        }
+        beta {
+            // base package.<branch>.beta
+            applicationId "${flavorApplicationId}.beta"
+
+            // app name
+            resValue "string", "app_name", "$flavorApplicationName Beta"
+        }
+        prod {
+            applicationId flavorApplicationId
+        }
     }
     signingConfigs {
         release {
-            storeFile file("keystore.jks")
-            storePassword getSecret("releaseStorePass", "n/a")
+            storeFile file('/Users/bobytanev/Projects/J2D-Demo/app/keystore.jks')
+            storePassword 'j2dd3m02++'
             keyAlias "j2d"
-            keyPassword getSecret("releaseKeyPass", "n/a")
+            keyPassword 'j2dd3m0'
         }
     }
     buildTypes {
@@ -41,20 +81,10 @@ android {
         debug {
             // explicitly change the package of the debug builds
             applicationIdSuffix ".debug"
-
-            // disable Crashlytics for debug builds
-            // most of the debug build are dev build, we dont' want to pollute our logs
-            buildConfigField("boolean", "USE_CRASHLYTICS", "false");
-            ext.enableCrashlytics = false
         }
 
         release {
             signingConfig signingConfigs.release
-
-            // enable crashlytics
-            buildConfigField("boolean", "USE_CRASHLYTICS", "true");
-            ext.enableCrashlytics = true
-            ext.betaDistributionReleaseNotes=getChangelog()
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -72,7 +102,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

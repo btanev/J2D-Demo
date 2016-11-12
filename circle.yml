@@ -25,9 +25,9 @@ deployment:
   beta:
     branch: [develop]
     commands:
-      - ./gradlew crashlyticsUploadDistributionRelease
+      - ./gradlew crashlyticsUploadDistributionBetaRelease
 
   prod:
     branch: [master]
     commands:
-      - ./gradlew crashlyticsUploadDistributionRelease
+      - ./gradlew crashlyticsUploadDistributionProdRelease
