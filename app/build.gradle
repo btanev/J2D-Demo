@@ -37,8 +37,24 @@ android {
         }
     }
     buildTypes {
+
+        debug {
+            // explicitly change the package of the debug builds
+            applicationIdSuffix ".debug"
+
+            // disable Crashlytics for debug builds
+            // most of the debug build are dev build, we dont' want to pollute our logs
+            buildConfigField("boolean", "USE_CRASHLYTICS", "false");
+            ext.enableCrashlytics = false
+        }
+
         release {
             signingConfig signingConfigs.release
+
+            // enable crashlytics
+            buildConfigField("boolean", "USE_CRASHLYTICS", "true");
+            ext.enableCrashlytics = true
+            ext.betaDistributionReleaseNotes=getChangelog()
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

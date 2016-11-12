@@ -43,9 +43,49 @@ def buildFabricPropertiesIfNeeded() {
     }
 }
 
+/**
+ *
+ * @return return CircleCI build branch or "localdev"
+ */
+def getBranchName() {
+    def branch = System.getenv("CIRCLE_BRANCH");
+    if (branch != null && branch.length() > 0) {
+        branch = branch.trim();
+    } else {
+        // fallback for local dev
+        branch = "localdev";
+    }
+
+    return branch;
+}
+
+/**
+ *
+ * @return Generated changelog from the last 10 GitHub commits
+ */
+def getChangelog() {
+    if ("localdev".equalsIgnoreCase(getBranchName())) {
+        return "Local development build"
+    }
+
+    def logCmd = 'git log --oneline --no-decorate -n 10'
+    def logs = logCmd.execute().text.trim()
+    def items = []
+
+    if (logs.length() > 0) {
+        def lines = logs.split("\n")
+        for (int i = 0; i < lines.length; i++) {
+            items.add(String.format("%02d %s", i + 1, lines[i]))
+        }
+    }
+
+    return items.join("\n")
+}
+
 // Export methods by turning them into closures
 ext {
     buildFabricPropertiesIfNeeded = this.&buildFabricPropertiesIfNeeded
     getSecret = this.&getSecret
     loadProperties = this.&loadProperties
+    getChangelog = this.&getChangelog
 }
