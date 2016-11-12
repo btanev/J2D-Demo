@@ -1,0 +1,33 @@
+machine:
+  environment:
+    GRADLE_OPTS: -Xmx512m
+  java:
+    version: oraclejdk8
+
+dependencies:
+  pre:
+    - echo y | android update sdk --no-ui --all --filter tools
+    - echo y | android update sdk --no-ui --all --filter extra-android-m2repository
+    - echo y | android update sdk --no-ui --all --filter extra-android-support
+    - echo y | android update sdk --no-ui --all --filter extra-google-m2repository
+    - echo y | android update sdk --no-ui --all --filter build-tools-25.0.0
+    - echo y | android update sdk --no-ui --all --filter android-25
+
+test:
+  override:
+    # assemble app & run unit test(s)
+    - ./gradlew clean build test -PdisablePreDex -Pcom.android.build.threadPoolSize=4
+
+    # copy the build outputs to artifacts
+    - cp -r app/build/outputs/* $CIRCLE_ARTIFACTS
+
+deployment:
+  beta:
+    branch: [develop]
+    commands:
+      - ./gradlew assembleRelease
+
+  prod:
+    branch: [master]
+    commands:
+      - ./gradlew assembleRelease
